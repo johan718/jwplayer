@@ -16,10 +16,16 @@ define([
     Playlist.filterPlaylist = function(playlist, providers, androidhls, configDrm, preload, feedid, withCredentials) {
         var list = [];
 
+
         _.each(playlist, function(item) {
             item = _.extend({}, item);
-            item.allSources = _formatSources(item.sources, androidhls,
-                item.drm || configDrm, item.preload || preload, item.withCredentials || withCredentials);
+
+            item.allSources = _formatSources(item.sources,
+                androidhls,
+                item.drm || configDrm,
+                item.preload || preload,
+                _fallbackIfUndefined(item.withCredentials, withCredentials));
+
             item.sources = _filterSources(item.allSources, providers);
 
             if (!item.sources.length) {
@@ -62,7 +68,7 @@ define([
                 originalSource.preload = originalSource.preload || preload;
             }
 
-            originalSource.withCredentials = originalSource.withCredentials || withCredentials;
+            originalSource.withCredentials = _fallbackIfUndefined(originalSource.withCredentials, withCredentials);
 
             return Source(originalSource);
         }));
@@ -91,6 +97,10 @@ define([
         }
 
         return null;
+    }
+
+    function _fallbackIfUndefined(value, fallback) {
+        return typeof value !== 'undefined' ? value : fallback;
     }
 
     return Playlist;
